@@ -36,6 +36,9 @@ This function takes a document list and tokenizes it into a matrix using CountVe
 #### Cluster documents -- cluster_documents()
 This function takes a tokenized document and clusters it using KMeans cluster; It finds the ideal n_clusters using the silhouette score.
 
+#### Best cluster -- best_cluster()
+takes the count vectorizer model, the tokenized matrix, and the n_clusters ideal size to visualize the feature names of the clusters.
+
 #### Summarize documents clusters -- summarize_documents()
 This function takes a list of strings, tokenizes them into sentences, extracts the best summarizing sentences using Text Rank, and then selects the top 8 best summary sentences to write.
 
