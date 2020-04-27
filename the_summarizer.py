@@ -1,4 +1,3 @@
-import os
 import random
 import glob
 from sklearn.metrics import silhouette_score
@@ -8,7 +7,6 @@ import json
 import pickle
 import nltk
 import numpy as np
-import pandas as pd
 import networkx
 import os
 
@@ -52,22 +50,44 @@ def tfid_vectorize(doc):
     tv = TfidfVectorizer(min_df = 0., max_df=1., use_idf=True)
     tv_matrix = tv.fit_transform(doc)
     pickle.dump(tv_matrix, open('yummy_pickle.pkl', 'wb'))
-    return tv_matrix
+    return tv, tv_matrix
+
+
+# use countvectoizer on the documents to get the matrix
+def count_vectorize(doc):
+    cv = CountVectorizer()
+    cv_matrix = cv.fit_transform(doc)
+    pickle.dump(cv_matrix, open('yummy_pickle_cv.pkl', 'wb'))
+    return cv, cv_matrix
 
 
 # Takes tokenized documents and clusters them -- Uses Silhouette Coefficient to measure cluster quality.
 # Records the documents that are part of each cluster
 def cluster_documents(doc_list):
-    tokenized_files = tfid_vectorize(doc_list)
+    cv, tokenized_files = count_vectorize(doc_list)
     cluster_range = list(range(2, 8))
     for n_clusters in cluster_range:
         km = KMeans(n_clusters=n_clusters)
         km_predicts = km.fit_predict(tokenized_files)
-        pickle_save = 'pickle_km_' + n_clusters + '.pkl'
+        pickle_save = 'pickle_km_' + str(n_clusters) + '.pkl'
         pickle.dump(km_predicts, open(pickle_save, 'wb'))
 
         score = silhouette_score(tokenized_files, km_predicts)
         print("Number of clusters: {}, Silhouette Score: {}".format(n_clusters, score))
+    return cv, tokenized_files
+
+
+# fits the best cluster size and shows the feature names
+def best_cluster(cv, tokenized_files, size):
+    km = KMeans(n_clusters=size).fit(tokenized_files)
+    feature_names = cv.get_feature_names()
+    ordered_centroids = km.cluster_centers_.argsort()[:, ::-1]
+    for cluster_num in range(2):
+        print('CLUSTER #' +str(cluster_num+1))
+        feature_list = list()
+        for i in ordered_centroids[cluster_num, :10]:
+            feature_list.append(feature_names[i])
+        print(feature_list)
 
 
 # summarize the documents looking at their top 8 sentences through TextRank
@@ -75,9 +95,12 @@ def summarize_documents(string_list):
     count = 0
     for string in string_list:
         sentences = nltk.sent_tokenize(string)
-        if len(sentences) < 8:
+        try:
+            if len(sentences) < 8:
+                raise Exception
+        except Exception:
             continue
-        tv_matrix = tfid_vectorize(sentences)
+        tv, tv_matrix = tfid_vectorize(sentences)
         try:
             tv_matrix = tv_matrix.toarray()
         except:
@@ -127,5 +150,3 @@ def write_summary_to_file(count, summary_array):
     file.write(str(summary_array))
     file.write('\n\n')
     file.close()
-
-
