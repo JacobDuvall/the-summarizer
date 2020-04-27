@@ -13,9 +13,9 @@ def main():
     string_of_files_list = files_reader(sampling_of_files)
     pprint.pprint(string_of_files_list[:2])
 
-    #cv, tokenized_files = cluster_documents(string_of_files_list)
+    cv, tokenized_files = cluster_documents(string_of_files_list)
 
-    #best_cluster(cv, tokenized_files, 2)
+    best_cluster(cv, tokenized_files, 2)
 
     summarize_documents(string_of_files_list)
 
