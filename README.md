@@ -1,4 +1,4 @@
-# cs5293sp20-project2
+# The Summarizer
 # Author: Jacob Duvall
 
 
